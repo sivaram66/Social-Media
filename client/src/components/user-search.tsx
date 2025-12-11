@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Loader2, Search, UserPlus, UserMinus, User } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { API_URL } from "@/lib/config"
 
 // Added interface for props
 interface UserSearchProps {
@@ -22,7 +23,7 @@ export function UserSearch({ onUserClick }: UserSearchProps) {
   const { data: followingData } = useQuery({
     queryKey: ["following"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:5000/api/users/following", {
+      const res = await fetch(`${API_URL}/api/users/following`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       return res.json()
@@ -37,7 +38,7 @@ export function UserSearch({ onUserClick }: UserSearchProps) {
     queryKey: ["search", searchTerm],
     queryFn: async () => {
       if (!searchTerm) return { users: [] }
-      const res = await fetch(`http://localhost:5000/api/users/search?q=${searchTerm}`, {
+      const res = await fetch(`${API_URL}/api/users/search?q=${searchTerm}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       return res.json()
@@ -48,7 +49,7 @@ export function UserSearch({ onUserClick }: UserSearchProps) {
   // 3. Follow Mutation
   const followMutation = useMutation({
     mutationFn: async (userId: number) => {
-      await fetch("http://localhost:5000/api/users/follow", {
+      await fetch(`${API_URL}/api/users/follow`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -68,7 +69,7 @@ export function UserSearch({ onUserClick }: UserSearchProps) {
   // 4. Unfollow Mutation
   const unfollowMutation = useMutation({
     mutationFn: async (userId: number) => {
-      await fetch("http://localhost:5000/api/users/unfollow", {
+      await fetch(`${API_URL}/api/users/unfollow`, {
         method: "DELETE",
         headers: { 
           "Content-Type": "application/json",

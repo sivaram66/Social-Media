@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Check, AlertCircle, Bell } from "lucide-react"
+import { API_URL } from "@/lib/config"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function SettingsView() {
@@ -32,7 +33,7 @@ export function SettingsView() {
   // 1. MUTATION: Update Profile
   const updateProfileMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch("http://localhost:5000/api/users/profile", {
+      const res = await fetch(`${API_URL}/api/users/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ 
@@ -58,7 +59,7 @@ export function SettingsView() {
   // 2. MUTATION: Change Password
   const changePasswordMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch("http://localhost:5000/api/users/password", {
+      const res = await fetch(`${API_URL}/api/users/password`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),

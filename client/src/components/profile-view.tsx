@@ -10,7 +10,7 @@ import { Loader2, Calendar, Mail, UserPlus, UserMinus, Camera } from "lucide-rea
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-
+import { API_URL } from "@/lib/config"
 interface ProfileViewProps {
   targetUserId?: number | null
   onUserClick?: (id: number) => void
@@ -32,8 +32,8 @@ export function ProfileView({ targetUserId, onUserClick }: ProfileViewProps) {
     queryKey: ["profile", isMe ? "me" : targetUserId],
     queryFn: async () => {
       const url = isMe 
-        ? "http://localhost:5000/api/users/stats" 
-        : `http://localhost:5000/api/users/${targetUserId}/profile`
+        ? `${API_URL}/api/users/stats`
+        : `${API_URL}/api/users/${targetUserId}/profile`
       
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
       if (!res.ok) throw new Error("Failed to fetch profile")
@@ -59,8 +59,8 @@ export function ProfileView({ targetUserId, onUserClick }: ProfileViewProps) {
     queryKey: ["posts", isMe ? "me" : targetUserId],
     queryFn: async () => {
       const url = isMe 
-        ? "http://localhost:5000/api/posts/my"
-        : `http://localhost:5000/api/posts/user/${targetUserId}`
+        ? `${API_URL}/api/posts/my`
+        : `${API_URL}/api/posts/user/${targetUserId}`
       
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
       return res.json()
@@ -75,7 +75,7 @@ export function ProfileView({ targetUserId, onUserClick }: ProfileViewProps) {
   const toggleFollowMutation = useMutation({
     mutationFn: async () => {
       const endpoint = isFollowing ? "unfollow" : "follow"
-      await fetch(`http://localhost:5000/api/users/${endpoint}`, {
+      await fetch(`${API_URL}/api/users/${endpoint}`, {
         method: isFollowing ? "DELETE" : "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ user_id: targetUserId }),
@@ -93,7 +93,7 @@ export function ProfileView({ targetUserId, onUserClick }: ProfileViewProps) {
         const formData = new FormData()
         formData.append("avatar", blob) 
 
-        const res = await fetch("http://localhost:5000/api/users/profile-pic", {
+        const res = await fetch(`${API_URL}/api/users/profile-pic`, {
             method: "PUT",
             headers: { Authorization: `Bearer ${token}` },
             body: formData

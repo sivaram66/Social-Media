@@ -6,10 +6,11 @@ import { useAuth } from "./auth-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Loader2, Send } from "lucide-react"
+import { API_URL } from "@/lib/config"
 
 interface CommentSectionProps {
   postId: number
-  onUserClick: (id: number) => void // <--- NEW PROP
+  onUserClick: (id: number) => void 
 }
 
 export function CommentSection({ postId, onUserClick }: CommentSectionProps) {
@@ -20,7 +21,7 @@ export function CommentSection({ postId, onUserClick }: CommentSectionProps) {
   const { data, isLoading } = useQuery({
     queryKey: ["comments", postId],
     queryFn: async () => {
-      const res = await fetch(`http://localhost:5000/api/comments/post/${postId}`, {
+      const res = await fetch(`${API_URL}/api/comments/post/${postId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       return res.json()
@@ -29,7 +30,7 @@ export function CommentSection({ postId, onUserClick }: CommentSectionProps) {
 
   const addCommentMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch("http://localhost:5000/api/comments", {
+      const res = await fetch(`${API_URL}/api/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

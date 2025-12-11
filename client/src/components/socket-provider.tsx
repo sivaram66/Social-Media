@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { io, Socket } from "socket.io-client"
 import { useAuth } from "./auth-provider"
+import { API_URL } from "@/lib/config"
 
 interface SocketContextType {
   socket: Socket | null
@@ -33,7 +34,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // 2. Initialize Socket Connection
     // We pass userId in query so backend knows who this is
-    const socketInstance = io("http://localhost:5000", {
+    const socketInstance = io(`${API_URL}`, {
       query: { userId: user.id },
       transports: ["websocket"], 
     })

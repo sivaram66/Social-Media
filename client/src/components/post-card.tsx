@@ -7,6 +7,7 @@ import { useAuth } from "./auth-provider"
 import { CommentSection } from "./comment-section"
 import { LikesModal } from "./likes-modal"
 import { Button } from "@/components/ui/button"
+import { API_URL } from "@/lib/config"
 
 interface PostCardProps {
   id: number
@@ -57,7 +58,7 @@ export function PostCard({
   // --- DELETE POST ---
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`http://localhost:5000/api/posts/${id}`, {
+      const res = await fetch(`${API_URL}/api/posts/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -74,14 +75,14 @@ export function PostCard({
     mutationFn: async () => {
       const action = isLiked ? "unlike" : "like"
       if (action === "unlike") {
-        const res = await fetch(`http://localhost:5000/api/likes/${id}`, {
+        const res = await fetch(`${API_URL}/api/likes/${id}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) throw new Error("Failed to unlike")
         return "unliked"
       } else {
-        const res = await fetch("http://localhost:5000/api/likes", {
+        const res = await fetch(`${API_URL}/api/likes`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ post_id: id }),

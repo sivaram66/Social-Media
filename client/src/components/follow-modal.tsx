@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Loader2, User, UserMinus, X } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { API_URL } from "@/lib/config"
+
 
 interface FollowModalProps {
   isOpen: boolean
@@ -22,8 +24,8 @@ export function FollowModal({ isOpen, onClose, type }: FollowModalProps) {
     queryKey: [type], 
     queryFn: async () => {
       const endpoint = type === "followers" 
-        ? "http://localhost:5000/api/users/followers"
-        : "http://localhost:5000/api/users/following"
+        ? `${API_URL}/api/users/followers`
+        : `${API_URL}/api/users/following`
       
       const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
@@ -36,7 +38,7 @@ export function FollowModal({ isOpen, onClose, type }: FollowModalProps) {
   // 2. Action: Unfollow (When viewing 'following')
   const unfollowMutation = useMutation({
     mutationFn: async (userId: number) => {
-      await fetch("http://localhost:5000/api/users/unfollow", {
+      await fetch(`${API_URL}/api/users/unfollow`, {
         method: "DELETE",
         headers: { 
             "Content-Type": "application/json", 
@@ -54,7 +56,7 @@ export function FollowModal({ isOpen, onClose, type }: FollowModalProps) {
   // 3. Action: Remove Follower (When viewing 'followers')
   const removeFollowerMutation = useMutation({
     mutationFn: async (userId: number) => {
-      await fetch(`http://localhost:5000/api/users/followers/${userId}`, {
+      await fetch(`${API_URL}/api/users/followers/${userId}`, {
         method: "DELETE", // We just created this endpoint!
         headers: { Authorization: `Bearer ${token}` },
       })

@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { API_URL } from "@/lib/config"
 
 interface User {
   id: string
@@ -40,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -61,13 +62,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const sendOtp = async (email: string, username: string) => {
   try {
-    const response = await fetch("http://localhost:5000/api/auth/send-otp", {
+    const response = await fetch(`${API_URL}/api/auth/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, username }),
     })
 
-    // FIX: Read the error message from the backend before throwing
+    // Read the error message from the backend before throwing
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || "Failed to send OTP");
@@ -80,13 +81,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (email: string, username: string, password: string, full_name: string, otp: string) => {
   try {
-    const response = await fetch("http://localhost:5000/api/auth/register", {
+    const response = await fetch(`${API_URL}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, username, password, full_name, otp }),
     })
 
-    // FIX: Read the backend error message
+    // Read the backend error message
     if (!response.ok) {
       const errorData = await response.json();
       // If validation failed, it usually comes as { details: ["Password too short"] } or { error: "..." }

@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from "@/components/ui/textarea"
 import { AlertCircle, ImageIcon, Loader2, X, MessageSquare } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Checkbox } from "@/components/ui/checkbox" // Ensure you have this or use standard input
+import { Checkbox } from "@/components/ui/checkbox" 
+import { API_URL } from "@/lib/config"
 
 interface CreatePostModalProps {
   isOpen: boolean
@@ -38,7 +39,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
         formData.append("media", file)
       }
 
-      const response = await fetch("http://localhost:5000/api/posts", {
+      const response = await fetch(`${API_URL}/api/posts`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -57,7 +58,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
       setFile(null)
       setPreview(null)
       setError(null)
-      setCommentsEnabled(true) // Reset to default
+      setCommentsEnabled(true) 
       onClose()
     },
     onError: (err) => {

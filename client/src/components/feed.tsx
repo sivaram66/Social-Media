@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "./auth-provider"
 import { PostCard } from "./post-card"
 import { Loader2 } from "lucide-react"
+import { API_URL } from "@/lib/config"
 
 interface FeedProps {
   onUserClick: (id: number) => void
@@ -20,7 +21,7 @@ export function Feed({ onUserClick }: FeedProps) {
     // This forces a complete refresh whenever you log in as a different person.
     queryKey: ["feed", user?.id], 
     queryFn: async () => {
-      const response = await fetch("http://localhost:5000/api/posts/feed", {
+      const response = await fetch(`${API_URL}/api/posts/feed`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

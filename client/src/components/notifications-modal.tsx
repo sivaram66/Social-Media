@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Loader2, Heart, MessageCircle, UserPlus, Bell } from "lucide-react"
 import { useAuth } from "./auth-provider"
 import { useSocket } from "./socket-provider"
+import { API_URL } from "@/lib/config"
 
 interface NotificationsModalProps {
   isOpen: boolean
@@ -22,7 +23,7 @@ export function NotificationsModal({ isOpen, onClose, onUserClick }: Notificatio
   // 1. Fetch History
   useEffect(() => {
     if (isOpen) {
-      fetch("http://localhost:5000/api/notifications", {
+      fetch(`${API_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
@@ -30,7 +31,7 @@ export function NotificationsModal({ isOpen, onClose, onUserClick }: Notificatio
           setNotifications(data.notifications || [])
           setLoading(false)
           // Mark read
-          fetch("http://localhost:5000/api/notifications/read", {
+          fetch(`${API_URL}/api/notifications/read`, {
             method: "PUT",
             headers: { Authorization: `Bearer ${token}` },
           })
