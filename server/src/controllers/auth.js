@@ -76,6 +76,7 @@ const sendOtp = async (req, res) => {
 const register = async (req, res) => {
   try {
     const { username, email, password, full_name, otp } = req.body;
+    const cleanUsername = username.toLowerCase();
 
     // 1. Verify OTP
     const otpRecord = await query(
@@ -100,7 +101,7 @@ const register = async (req, res) => {
     }
 
     // 2. Create user (Password hashing happens inside createUser model)
-    const user = await createUser({ username, email, password, full_name });
+    const user = await createUser({ cleanUsername, email, password, full_name });
 
     // 3. Delete used OTP
     await query("DELETE FROM verification_codes WHERE email = $1", [email]);
@@ -108,16 +109,16 @@ const register = async (req, res) => {
     // 4. Generate token
     const token = generateToken({
       userId: user.id,
-      username: user.username,
+      cleanUsername: user.cleanUsername,
     });
 
-    logger.verbose(`New user registered: ${username}`);
+    logger.verbose(`New user registered: ${cleanUsername}`);
 
     res.status(201).json({
       message: "User registered successfully",
       user: {
         id: user.id,
-        username: user.username,
+        cleanUsername: user.cleanUsername,
         email: user.email,
         full_name: user.full_name,
       },
@@ -135,8 +136,9 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
+    const cleanUsername = username.toLowerCase();
 
-    const user = await getUserByUsername(username);
+    const user = await getUserByUsername(cleanUsername);
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -148,16 +150,16 @@ const login = async (req, res) => {
 
     const token = generateToken({
       userId: user.id,
-      username: user.username,
+      cleanUsername: user.cleanUsername,
     });
 
-    logger.verbose(`User logged in: ${username}`);
+    logger.verbose(`User logged in: ${cleanUsername}`);
 
     res.json({
       message: "Login successful",
       user: {
         id: user.id,
-        username: user.username,
+        cleanUsername: user.cleanUsername,
         email: user.email,
         full_name: user.full_name,
       },
@@ -178,7 +180,7 @@ const getProfile = async (req, res) => {
     res.json({
       user: {
         id: user.id,
-        username: user.username,
+        cleanUsername: user.cleanUsername,
         email: user.email,
         full_name: user.full_name,
         created_at: user.created_at,
