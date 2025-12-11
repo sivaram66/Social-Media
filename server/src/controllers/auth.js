@@ -131,7 +131,7 @@ const register = async (req, res) => {
 };
 
 /**
- * Login user (Unchanged)
+ * Login user 
  */
 const login = async (req, res) => {
   try {

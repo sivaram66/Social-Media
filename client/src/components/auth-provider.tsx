@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || "Login failed")
+        throw new Error(data.error || data.message || "Login failed")
       }
 
       const { token, user } = data
