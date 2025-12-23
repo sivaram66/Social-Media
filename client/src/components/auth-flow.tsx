@@ -167,7 +167,7 @@ export function AuthFlow() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">Social Media</CardTitle>
-          <CardDescription>Share your financial moments</CardDescription>
+          <CardDescription>Share your moments</CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
