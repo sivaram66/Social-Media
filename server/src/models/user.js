@@ -10,14 +10,14 @@ const bcrypt = require("bcryptjs");
  * @param {Object} userData - User data
  * @returns {Promise<Object>} Created user
  */
-const createUser = async ({ username, email, password, full_name }) => {
+const createUser = async ({ cleanUsername, email, password, full_name }) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const result = await query(
     `INSERT INTO users (username, email, password_hash, full_name, created_at)
      VALUES ($1, $2, $3, $4, NOW())
      RETURNING id, username, email, full_name, created_at`,
-    [username, email, hashedPassword, full_name],
+    [cleanUsername, email, hashedPassword, full_name],
   );
 
   return result.rows[0];
