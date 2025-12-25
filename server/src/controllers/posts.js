@@ -4,6 +4,8 @@ const {
   getPostsByUserId,
   deletePost,
   getFeedPosts,
+  getGlobalFeed,
+  getMixedFeed,
   updatePost: updatePostModel,
   searchPosts: searchPostsModel,  
 } = require("../models/post.js");
@@ -155,20 +157,28 @@ const remove = async (req, res) => {
 };
 
 // TODO: Implement getFeed controller for content feed functionality
-async function getFeed(req, res) {
+// server/src/controllers/posts.js
+
+const getFeed = async (req, res) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page || "1", 10));
-    const limit = Math.min(50,Math.max(1, parseInt(req.query.limit || "10", 10))
-    );
+    const userId = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
-    const data = await getFeedPosts(req.user.id, limit, offset);
-    return res.json({ page, limit, count: data.length, data });
-  } catch (e) {
-    logger.critical("Feed error:", e);
-    return res.status(500).json({ error: "Internal server error" });
-  }  
-}
+    // Fetch the mixed feed (Followed users prioritized + Global suggestions)
+    const posts = await getMixedFeed(userId, limit, offset);
+
+    res.json({ 
+      posts, 
+      feedType: "mixed" // Tell frontend this is a mixed feed
+    });
+
+  } catch (error) {
+    logger.critical("Get feed error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 // TODO: Implement updatePost controller for editing posts
 const updatePost = async (req, res) => {

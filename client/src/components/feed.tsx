@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "./auth-provider"
 import { PostCard } from "./post-card"
-import { Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react" 
 import { API_URL } from "@/lib/config"
 
 interface FeedProps {
@@ -11,15 +11,14 @@ interface FeedProps {
 }
 
 export function Feed({ onUserClick }: FeedProps) {
-  const { token, user } = useAuth() 
+  const { token, user } = useAuth()
 
   const {
     data: feedData,
     isLoading,
     error,
   } = useQuery({
-    // This forces a complete refresh whenever you log in as a different person.
-    queryKey: ["feed", user?.id], 
+    queryKey: ["feed", user?.id],
     queryFn: async () => {
       const response = await fetch(`${API_URL}/api/posts/feed`, {
         headers: {
@@ -32,7 +31,7 @@ export function Feed({ onUserClick }: FeedProps) {
     enabled: !!token && !!user,
   })
 
-  const posts = feedData?.data || []
+  const posts = feedData?.posts || []
 
   if (isLoading) {
     return (
@@ -71,7 +70,7 @@ export function Feed({ onUserClick }: FeedProps) {
             username: post.username,
             full_name: post.full_name,
             id: post.user_id,
-            profile_pic_url: post.profile_pic_url,
+            profile_pic_url: post.avatar_url || post.profile_pic_url,
           }}
           createdAt={post.created_at}
           likeCount={post.like_count || 0}
@@ -79,6 +78,8 @@ export function Feed({ onUserClick }: FeedProps) {
           hasLiked={post.has_liked}
           commentsEnabled={post.comments_enabled}
           
+          // --- NEW: Pass the suggestion flag to the card ---
+          isSuggested={post.is_suggested} 
         />
       ))}
     </div>

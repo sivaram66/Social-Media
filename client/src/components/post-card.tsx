@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Heart, MessageCircle, Trash2, Share2 } from "lucide-react"
+import { Heart, MessageCircle, Trash2, Share2, Sparkles } from "lucide-react" // Removed UserPlus
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "./auth-provider"
 import { CommentSection } from "./comment-section"
@@ -17,7 +17,7 @@ interface PostCardProps {
     username: string
     full_name: string
     id: number
-    profile_pic_url?: string // <--- 1. Added this
+    profile_pic_url?: string 
   }
   createdAt?: string
   likeCount: number
@@ -25,6 +25,7 @@ interface PostCardProps {
   hasLiked: boolean
   commentsEnabled?: boolean
   onUserClick: (id: number) => void
+  isSuggested?: boolean 
 }
 
 export function PostCard({ 
@@ -37,7 +38,8 @@ export function PostCard({
   commentCount, 
   hasLiked, 
   commentsEnabled = true,
-  onUserClick 
+  onUserClick,
+  isSuggested = false 
 }: PostCardProps) {
   const { user: currentUser, token } = useAuth()
   const queryClient = useQueryClient()
@@ -113,32 +115,52 @@ export function PostCard({
       
       {/* 1. HEADER */}
       <div className="flex items-center justify-between p-4">
-        <div 
-            className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => onUserClick(user.id)}
-        >
-          {/* --- 2. UPDATED AVATAR SECTION --- */}
-          <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 p-[2px]">
-            <div className="h-full w-full rounded-full bg-background flex items-center justify-center text-foreground font-bold text-sm border-2 border-background overflow-hidden relative">
-              {user.profile_pic_url ? (
-                  <img 
-                    src={user.profile_pic_url} 
-                    alt={user.username} 
-                    className="w-full h-full object-cover" 
-                  />
-              ) : (
-                  user.full_name?.charAt(0).toUpperCase()
-              )}
+        <div className="flex items-center gap-3">
+          {/* Avatar Clickable Area */}
+          <div 
+             className="cursor-pointer group relative"
+             onClick={() => onUserClick(user.id)}
+          >
+            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 p-[2px]">
+              <div className="h-full w-full rounded-full bg-background flex items-center justify-center text-foreground font-bold text-sm border-2 border-background overflow-hidden">
+                {user.profile_pic_url ? (
+                    <img 
+                      src={user.profile_pic_url} 
+                      alt={user.username} 
+                      className="w-full h-full object-cover" 
+                    />
+                ) : (
+                    user.full_name?.charAt(0).toUpperCase()
+                )}
+              </div>
             </div>
           </div>
-          {/* ---------------------------------- */}
 
-          <div>
-            <p className="font-semibold text-sm leading-none group-hover:underline">{user.full_name}</p>
-            <p className="text-xs text-muted-foreground mt-1">@{user.username}</p>
+          {/* User Info */}
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <p 
+                className="font-semibold text-sm leading-none hover:underline cursor-pointer"
+                onClick={() => onUserClick(user.id)}
+              >
+                {user.full_name}
+              </p>
+              
+              {/* --- MODIFIED: SUGGESTED BADGE ONLY (No Follow Button) --- */}
+              {isSuggested && !isOwner && (
+                <div className="flex items-center gap-2 animate-in fade-in zoom-in ml-1">
+                   <span className="flex items-center gap-1 bg-blue-100 text-blue-700 text-[10px] font-bold px-1.5 py-0.5 rounded-sm select-none">
+                     <Sparkles className="w-3 h-3" />
+                     Suggested
+                   </span>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">@{user.username}</p>
           </div>
         </div>
 
+        {/* Right side: Date & Delete */}
         <div className="flex items-center gap-2">
           {createdAt && (
             <span className="text-xs text-muted-foreground">

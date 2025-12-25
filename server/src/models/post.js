@@ -170,7 +170,55 @@ async function searchPosts(q, limit = 20, offset = 0) {
   );
   return r.rows;
 }
+//Fetch global posts for suggestions
+const getGlobalFeed = async (limit = 20, offset = 0, excludeUserId) => {
+  const result = await query(
+    `SELECT p.*, u.username, u.full_name, u.profile_pic_url,
+        (SELECT COUNT(*)::int FROM likes l WHERE l.post_id = p.id) AS like_count,
+        (SELECT COUNT(*)::int FROM comments c WHERE c.post_id = p.id) AS comment_count,
+        (SELECT EXISTS(SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $3)) AS has_liked
+     FROM posts p
+     JOIN users u ON p.user_id = u.id
+     WHERE p.is_deleted = FALSE 
+       AND p.user_id != $3 -- Exclude my own posts from suggestions
+     ORDER BY p.created_at DESC
+     LIMIT $1 OFFSET $2`,
+    [limit, offset, excludeUserId]
+  );
+  return result.rows;
+};
+const getMixedFeed = async (userId, limit = 20, offset = 0) => {
+  const result = await query(
+    `SELECT 
+       p.*, 
+       u.username, 
+       u.full_name, 
+       u.profile_pic_url,
+       (SELECT COUNT(*)::int FROM likes l WHERE l.post_id = p.id) AS like_count,
+       (SELECT COUNT(*)::int FROM comments c WHERE c.post_id = p.id) AS comment_count,
+       (SELECT EXISTS(SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $1)) AS has_liked,
+       
+       -- Check if the current user follows the post author
+       (SELECT EXISTS(SELECT 1 FROM follows f WHERE f.follower_id = $1 AND f.followee_id = p.user_id)) AS is_following
 
+     FROM posts p
+     JOIN users u ON p.user_id = u.id
+     WHERE p.is_deleted = FALSE 
+       AND p.user_id != $1 -- Exclude my own posts
+     
+     ORDER BY 
+       is_following DESC,  -- 1. SHOW FOLLOWED USERS FIRST
+       p.created_at DESC   -- 2. Then show newest posts
+     LIMIT $2 OFFSET $3`,
+    [userId, limit, offset]
+  );
+
+  return result.rows.map(post => ({
+    ...post,
+    // Helper flag for the frontend: if I don't follow them, it's a suggestion
+    is_suggested: !post.is_following 
+  }));
+};
 module.exports = {
   createPost,
   getPostById,
@@ -178,5 +226,7 @@ module.exports = {
   deletePost,
   getFeedPosts,
   updatePost,
-  searchPosts
+  searchPosts,
+  getGlobalFeed,
+  getMixedFeed,
 };
