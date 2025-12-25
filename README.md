@@ -1,29 +1,29 @@
 -----
 
-# 📱 Full-Stack Social Media Application
+#  Full-Stack Social Media Application
 
 A modern, real-time social media platform built with the **PERN stack** (PostgreSQL, Express, React/Next.js, Node.js). Features include real-time notifications, image uploads via AWS S3, and instant messaging capabilities via Socket.io.
 
-## 🚀 Live Demo
+##  Live Demo
 
   * **Frontend (Vercel):** https://social-media-psi-pearl.vercel.app/
   * **Backend (Render):** https://social-media-ited.onrender.com
 
 -----
 
-## ✨ Key Features
+##  Key Features
 
-  * **🔐 Authentication:** Secure Login & Registration using JWT (JSON Web Tokens).
-  * **📝 Feed & Posts:** Create dynamic posts with text and images (stored on **AWS S3**).
-  * **❤️ Social Interactions:** Like, Comment, and Share posts instantly.
-  * **🔔 Real-Time Notifications:** Instant alerts for likes, comments, and follows using **Socket.io**.
-  * **👥 User Connections:** Follow/Unfollow users and explore new profiles.
-  * **🎨 Modern UI:** Fully responsive design built with **Next.js 14**, **Tailwind CSS**, and **Lucide Icons**.
-  * **🔍 Search:** Find other users efficiently.
+  * ** Authentication:** Secure Login & Registration using JWT (JSON Web Tokens).
+  * ** Feed & Posts:** Create dynamic posts with text and images (stored on **AWS S3**).
+  * ** Social Interactions:** Like, Comment, and Share posts instantly.
+  * **Real-Time Notifications:** Instant alerts for likes, comments, and follows using **Socket.io**.
+  * **User Connections:** Follow/Unfollow users and explore new profiles.
+  * ** Modern UI:** Fully responsive design built with **Next.js 14**, **Tailwind CSS**, and **Lucide Icons**.
+  * **Search:** Find other users efficiently.
 
 -----
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### **Frontend (Client)**
 
@@ -44,7 +44,7 @@ A modern, real-time social media platform built with the **PERN stack** (Postgre
 
 -----
 
-## 📂 Project Structure
+##  Project Structure
 
 This project is organized as a **Monorepo**:
 
@@ -66,7 +66,7 @@ Social-Media-App/
 
 -----
 
-## ⚡ Getting Started Locally
+##  Getting Started Locally
 
 Follow these steps to run the project on your local machine.
 
@@ -134,7 +134,7 @@ cd Social-Media
 -----
 
 
-## 🚀 Deployment
+##  Deployment
 
 ### Backend (Render)
 
@@ -154,4 +154,4 @@ cd Social-Media
 -----
 
 
-**Built with ❤️ by [Siva Ram]
+
