@@ -13,12 +13,12 @@ A modern, real-time social media platform built with the **PERN stack** (Postgre
 
 ##  Key Features
 
-  * ** Authentication:** Secure Login & Registration using JWT (JSON Web Tokens).
-  * ** Feed & Posts:** Create dynamic posts with text and images (stored on **AWS S3**).
-  * ** Social Interactions:** Like, Comment, and Share posts instantly.
+  * **Authentication:** Secure Login & Registration using JWT (JSON Web Tokens).
+  * **Feed & Posts:** Create dynamic posts with text and images (stored on **AWS S3**).
+  * **Social Interactions:** Like, Comment, and Share posts instantly.
   * **Real-Time Notifications:** Instant alerts for likes, comments, and follows using **Socket.io**.
   * **User Connections:** Follow/Unfollow users and explore new profiles.
-  * ** Modern UI:** Fully responsive design built with **Next.js 14**, **Tailwind CSS**, and **Lucide Icons**.
+  * **Modern UI:** Fully responsive design built with **Next.js 14**, **Tailwind CSS**, and **Lucide Icons**.
   * **Search:** Find other users efficiently.
 
 -----
