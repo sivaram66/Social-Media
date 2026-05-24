@@ -62,10 +62,10 @@ export function NotificationsModal({ isOpen, onClose, onUserClick }: Notificatio
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-card border-border/60 rounded-2xl shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-md premium-card rounded-2xl shadow-2xl p-0 overflow-hidden">
         <DialogHeader className="px-5 py-4 border-b border-border/60">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-xl bg-foreground flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl premium-logo flex items-center justify-center">
               <Bell className="w-3.5 h-3.5 text-background" />
             </div>
             <DialogTitle className="text-sm font-semibold">Notifications</DialogTitle>
@@ -96,7 +96,7 @@ export function NotificationsModal({ isOpen, onClose, onUserClick }: Notificatio
                   <div
                     key={i}
                     onClick={() => { onUserClick(n.sender_id); onClose() }}
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-accent transition-colors cursor-pointer group"
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-accent/70 transition-colors cursor-pointer group"
                   >
                     {/* Avatar */}
                     <div className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center text-xs font-semibold overflow-hidden flex-shrink-0">

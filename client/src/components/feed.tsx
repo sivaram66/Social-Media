@@ -32,7 +32,7 @@ export function Feed({ onUserClick }: FeedProps) {
         <div className="h-4 w-20 rounded-lg shimmer" />
       </div>
       {[1, 2, 3].map(i => (
-        <div key={i} className="bg-card border border-border/60 rounded-2xl p-4 space-y-3">
+        <div key={i} className="premium-card rounded-2xl p-4 space-y-3">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full shimmer" />
             <div className="space-y-1.5">
@@ -58,7 +58,7 @@ export function Feed({ onUserClick }: FeedProps) {
 
   if (!posts || posts.length === 0) return (
     <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-secondary border border-border flex items-center justify-center">
+      <div className="w-16 h-16 rounded-2xl premium-outline flex items-center justify-center">
         <Users className="w-8 h-8 text-muted-foreground/40" />
       </div>
       <div className="space-y-1">
@@ -76,7 +76,7 @@ export function Feed({ onUserClick }: FeedProps) {
       {followedPosts.length > 0 && (
         <div className="flex items-center gap-2 mb-3 px-1">
           <Users className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Following</span>
+          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">Following</span>
         </div>
       )}
 
@@ -94,7 +94,7 @@ export function Feed({ onUserClick }: FeedProps) {
         <>
           <div className="flex items-center gap-2 my-5 px-1">
             <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Suggested</span>
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">Suggested</span>
             <div className="flex-1 h-px bg-border/60" />
           </div>
           {suggestedPosts.map((post: any) => (

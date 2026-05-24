@@ -71,11 +71,11 @@ export function PostCard({ id, content, media_url, user, createdAt, likeCount, c
   const timeAgo = createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : ""
 
   return (
-    <div className="post-card bg-card border border-border rounded-2xl mb-3 overflow-hidden">
+    <div className="post-card premium-card rounded-2xl mb-4 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => onUserClick(user.id)}>
-          <div className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center text-sm font-semibold overflow-hidden flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center text-sm font-bold overflow-hidden flex-shrink-0 shadow-sm">
             {user.profile_pic_url
               ? <img src={user.profile_pic_url} alt={user.username} className="w-full h-full object-cover" />
               : <span>{user.full_name?.charAt(0).toUpperCase()}</span>
@@ -83,9 +83,9 @@ export function PostCard({ id, content, media_url, user, createdAt, likeCount, c
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-sm leading-tight hover:underline underline-offset-2">{user.full_name}</span>
+                <span className="font-bold text-sm leading-tight hover:underline underline-offset-2">{user.full_name}</span>
               {isSuggested && !isOwner && (
-                <span className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-secondary text-muted-foreground border border-border/60">
+                <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-secondary text-muted-foreground border border-border/60">
                   <Sparkles className="w-2.5 h-2.5" />
                   Suggested
                 </span>
@@ -112,19 +112,19 @@ export function PostCard({ id, content, media_url, user, createdAt, likeCount, c
       {/* Content */}
       {content?.trim() && (
         <div className="px-4 pb-3">
-          <p className="text-[14.5px] leading-relaxed text-foreground whitespace-pre-wrap">{content}</p>
+          <p className="text-[14.5px] leading-relaxed text-foreground/90 whitespace-pre-wrap">{content}</p>
         </div>
       )}
 
       {/* Image */}
       {media_url && (
-        <div className="mx-4 mb-3 rounded-xl overflow-hidden border border-border/40 bg-secondary/30">
+        <div className="mx-4 mb-3 rounded-xl overflow-hidden border border-border/60 bg-secondary/30 shadow-sm">
           <img src={media_url} alt="Post" className="w-full max-h-[500px] object-contain" />
         </div>
       )}
 
       {/* Actions */}
-      <div className="px-2 pb-2 flex items-center border-t border-border/40 pt-2 mx-2">
+      <div className="px-2 pb-2 flex items-center border-t border-border/50 pt-2 mx-2">
         <button
           onClick={handleLike}
           disabled={toggleLikeMutation.isPending}

@@ -64,7 +64,7 @@ export function SettingsView() {
 
   if (!user) return null
 
-  const inputCls = "h-10 rounded-xl border-border/60 bg-secondary text-sm focus:border-foreground/20 focus:ring-0 transition-colors"
+  const inputCls = "h-10 rounded-xl border-border/60 bg-secondary/70 text-sm focus:border-ring/50 focus:ring-0 transition-colors"
   const tabs = [
     { id: "profile" as const, icon: User, label: "Profile" },
     { id: "security" as const, icon: Lock, label: "Security" },
@@ -72,13 +72,13 @@ export function SettingsView() {
 
   return (
     <div className="max-w-lg space-y-6 pb-20">
-      <div>
-        <h2 className="text-lg font-bold tracking-tight">Settings</h2>
+      <div className="premium-card rounded-2xl p-4">
+        <h2 className="text-xl font-bold tracking-tight">Settings</h2>
         <p className="text-sm text-muted-foreground mt-0.5">Manage your account</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex bg-secondary rounded-xl p-1">
+      <div className="flex bg-secondary/75 rounded-xl p-1 border border-border/60">
         {tabs.map(({ id, icon: Icon, label }) => (
           <button
             key={id}
@@ -97,7 +97,7 @@ export function SettingsView() {
 
       {/* Profile Tab */}
       {activeTab === "profile" && (
-        <div className="bg-card border border-border/60 rounded-2xl p-5 space-y-4">
+        <div className="premium-card rounded-2xl p-5 space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Full Name</Label>
             <Input className={inputCls} value={fullName} onChange={e => setFullName(e.target.value)} />
@@ -143,7 +143,7 @@ export function SettingsView() {
           <button
             onClick={() => updateProfileMutation.mutate()}
             disabled={updateProfileMutation.isPending}
-            className="w-full h-10 rounded-xl bg-foreground text-background text-sm font-semibold transition-all hover:opacity-85 disabled:opacity-40 flex items-center justify-center gap-2"
+            className="w-full h-10 rounded-xl premium-button text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {updateProfileMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
           </button>
@@ -152,7 +152,7 @@ export function SettingsView() {
 
       {/* Security Tab */}
       {activeTab === "security" && (
-        <div className="bg-card border border-border/60 rounded-2xl p-5 space-y-4">
+        <div className="premium-card rounded-2xl p-5 space-y-4">
           <div>
             <p className="text-sm font-semibold">Change Password</p>
             <p className="text-xs text-muted-foreground mt-0.5">Ensure your account stays secure</p>
@@ -183,7 +183,7 @@ export function SettingsView() {
           <button
             onClick={() => changePasswordMutation.mutate()}
             disabled={changePasswordMutation.isPending || !oldPassword || !newPassword}
-            className="w-full h-10 rounded-xl bg-foreground text-background text-sm font-semibold transition-all hover:opacity-85 disabled:opacity-40 flex items-center justify-center gap-2"
+            className="w-full h-10 rounded-xl premium-button text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {changePasswordMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Update Password"}
           </button>

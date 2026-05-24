@@ -65,14 +65,14 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg bg-card border-border/60 rounded-2xl shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="max-w-lg premium-card rounded-2xl shadow-2xl p-0 overflow-hidden">
 
         {/* Header */}
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-border/60">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center text-sm font-semibold overflow-hidden flex-shrink-0">
-              {user?.profile_pic_url
-                ? <img src={user.profile_pic_url} alt="" className="w-full h-full object-cover" />
+              {(user as any)?.profile_pic_url
+                ? <img src={(user as any).profile_pic_url} alt="" className="w-full h-full object-cover" />
                 : user?.full_name?.charAt(0).toUpperCase()
               }
             </div>
@@ -95,7 +95,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
             placeholder="What's on your mind?"
             value={content}
             onChange={e => setContent(e.target.value.slice(0, maxChars))}
-            className="min-h-[100px] resize-none bg-secondary/50 border-border/50 focus:border-foreground/20 focus:ring-0 rounded-xl text-sm placeholder:text-muted-foreground/50"
+            className="min-h-[100px] resize-none bg-secondary/60 border-border/50 focus:border-ring/50 focus:ring-0 rounded-xl text-sm placeholder:text-muted-foreground/50"
             disabled={mutation.isPending}
           />
 
@@ -131,7 +131,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                 onClick={() => setCommentsEnabled(!commentsEnabled)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-colors ${
                   commentsEnabled
-                    ? "border-foreground/20 bg-foreground text-background"
+                    ? "border-ring/30 premium-button"
                     : "border-border/60 text-muted-foreground hover:bg-secondary"
                 }`}
               >
@@ -151,7 +151,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
               <button
                 onClick={handleSubmit}
                 disabled={mutation.isPending || (!content.trim() && !file)}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-foreground text-background text-sm font-semibold transition-all hover:opacity-85 disabled:opacity-40 active:scale-95"
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg premium-button text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-40 active:scale-95"
               >
                 {mutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                 {mutation.isPending ? "Posting..." : "Post"}

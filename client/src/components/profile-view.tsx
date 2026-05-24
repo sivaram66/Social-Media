@@ -93,7 +93,7 @@ export function ProfileView({ targetUserId, onUserClick }: ProfileViewProps) {
 
   if (profileLoading) return (
     <div className="space-y-4">
-      <div className="bg-card border border-border/60 rounded-2xl p-6 space-y-4">
+      <div className="premium-card rounded-2xl p-6 space-y-4">
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 rounded-full shimmer flex-shrink-0" />
           <div className="flex-1 space-y-2 pt-1">
@@ -116,7 +116,7 @@ export function ProfileView({ targetUserId, onUserClick }: ProfileViewProps) {
   return (
     <div className="space-y-4 pb-20">
       {/* Profile Card */}
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+      <div className="premium-card rounded-2xl overflow-hidden">
         {/* Cover strip */}
         <div className="h-24 profile-cover" />
 
@@ -131,7 +131,7 @@ export function ProfileView({ targetUserId, onUserClick }: ProfileViewProps) {
                 }
               </div>
               {isMe && (
-                <label className="absolute bottom-0 right-0 w-6 h-6 bg-foreground text-background rounded-full flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity border-2 border-card">
+                <label className="absolute bottom-0 right-0 w-6 h-6 premium-button rounded-full flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity border-2 border-card">
                   <Camera className="w-3 h-3" />
                   <input type="file" className="hidden" accept="image/*" onChange={onFileChange} />
                 </label>
@@ -145,7 +145,7 @@ export function ProfileView({ targetUserId, onUserClick }: ProfileViewProps) {
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 ${
                   isFollowing
                     ? "border border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
-                    : "bg-foreground text-background hover:opacity-85"
+                    : "premium-button hover:opacity-90"
                 }`}
               >
                 {toggleFollowMutation.isPending
@@ -160,7 +160,7 @@ export function ProfileView({ targetUserId, onUserClick }: ProfileViewProps) {
 
           {/* Name */}
           <div className="space-y-0.5 mb-3">
-            <h2 className="text-base font-bold leading-tight">{displayUser.full_name}</h2>
+            <h2 className="text-lg font-bold leading-tight tracking-tight">{displayUser.full_name}</h2>
             <p className="text-sm text-muted-foreground">@{displayUser.username}</p>
           </div>
 
@@ -199,7 +199,7 @@ export function ProfileView({ targetUserId, onUserClick }: ProfileViewProps) {
       <div>
         <div className="flex items-center gap-2 mb-3 px-1">
           <Grid3X3 className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
             Posts {posts.length > 0 && `· ${posts.length}`}
           </span>
         </div>
@@ -227,7 +227,7 @@ export function ProfileView({ targetUserId, onUserClick }: ProfileViewProps) {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 border border-dashed border-border/60 rounded-2xl">
+          <div className="text-center py-12 border border-dashed border-border/60 rounded-2xl bg-card/45">
             <Grid3X3 className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">No posts yet</p>
           </div>

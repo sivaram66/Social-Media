@@ -102,7 +102,7 @@ export default function Page() {
         <div className="flex-1 overflow-y-auto max-w-3xl mx-auto w-full">
           <div className="p-4 md:p-6 space-y-4">
             
-            {currentView === "feed" && <Feed />}
+            {currentView === "feed" && <Feed onUserClick={handleOpenProfile} />}
             
             {currentView === "search" && <UserSearch onUserClick={handleOpenProfile} />}
             

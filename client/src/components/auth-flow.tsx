@@ -83,13 +83,13 @@ export function AuthFlow() {
   const hasNumber = /\d/.test(password)
   const isPasswordValid = isLengthValid && hasNumber
 
-  const inputCls = "h-11 rounded-xl border-border/70 bg-secondary text-foreground placeholder:text-muted-foreground/50 focus:border-foreground/30 focus:ring-0 text-sm transition-colors"
-  const primaryBtn = "w-full h-11 rounded-xl bg-foreground text-background font-semibold text-sm transition-all hover:opacity-85 active:scale-[0.98] disabled:opacity-40 flex items-center justify-center gap-2"
+  const inputCls = "h-11 rounded-xl border-border/70 bg-secondary/70 text-foreground placeholder:text-muted-foreground/50 focus:border-ring/60 focus:ring-0 text-sm transition-colors"
+  const primaryBtn = "w-full h-11 rounded-xl premium-button font-semibold text-sm transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 flex items-center justify-center gap-2"
   const ghostBtn = "w-full h-10 text-sm text-muted-foreground hover:text-foreground transition-colors"
 
   const Logo = () => (
     <div className="flex flex-col items-center gap-3 mb-8">
-      <div className="w-12 h-12 rounded-2xl bg-foreground flex items-center justify-center">
+      <div className="w-12 h-12 rounded-2xl premium-logo flex items-center justify-center">
         <Bird className="w-6 h-6 text-background" />
       </div>
       <div className="text-center">
@@ -109,12 +109,12 @@ export function AuthFlow() {
   ) : null
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center premium-shell p-4">
       {/* Subtle background pattern */}
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-secondary via-background to-background pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,color-mix(in_srgb,var(--ring)_18%,transparent),transparent_30rem)] pointer-events-none" />
 
       <div className="relative w-full max-w-[380px]">
-        <div className="auth-card bg-card rounded-2xl p-8 border border-border">
+        <div className="auth-card premium-card rounded-2xl p-8">
           <Logo />
 
           {/* Forgot password view */}
@@ -145,7 +145,7 @@ export function AuthFlow() {
           {view === "main" && (
             <>
               {/* Tabs */}
-              <div className="flex bg-secondary rounded-xl p-1 mb-6">
+              <div className="flex bg-secondary/75 rounded-xl p-1 mb-6 border border-border/60">
                 {(["login", "register"] as const).map(tab => (
                   <button
                     key={tab}

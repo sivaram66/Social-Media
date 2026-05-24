@@ -70,8 +70,8 @@ export function UserSearch({ onUserClick }: UserSearchProps) {
   return (
     <div className="space-y-5 pb-20">
       {/* Page header */}
-      <div>
-        <h2 className="text-lg font-bold tracking-tight">Explore</h2>
+      <div className="premium-card rounded-2xl p-4">
+        <h2 className="text-xl font-bold tracking-tight">Explore</h2>
         <p className="text-sm text-muted-foreground mt-0.5">Find and follow people</p>
       </div>
 
@@ -82,7 +82,7 @@ export function UserSearch({ onUserClick }: UserSearchProps) {
           placeholder="Search users..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
-          className="pl-10 h-11 rounded-xl border-border/60 bg-secondary text-sm focus:border-foreground/20 focus:ring-0"
+          className="pl-10 h-11 rounded-xl border-border/60 bg-card/80 text-sm focus:border-ring/50 focus:ring-0 shadow-sm"
         />
       </div>
 
@@ -99,7 +99,7 @@ export function UserSearch({ onUserClick }: UserSearchProps) {
           return (
             <div
               key={user.id}
-              className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-card hover:border-border transition-colors cursor-pointer"
+              className="flex items-center gap-3 p-3 rounded-xl premium-card hover:border-ring/40 transition-colors cursor-pointer"
               onClick={e => {
                 if ((e.target as HTMLElement).closest("button")) return
                 onUserClick(user.id)
@@ -123,7 +123,7 @@ export function UserSearch({ onUserClick }: UserSearchProps) {
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 flex-shrink-0 ${
                   isFollowing
                     ? "border border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
-                    : "bg-foreground text-background hover:opacity-85"
+                    : "premium-button hover:opacity-90"
                 }`}
               >
                 {isFollowing
