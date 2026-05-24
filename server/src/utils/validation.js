@@ -6,7 +6,9 @@ const Joi = require("joi");
 
 // Schema for Step 1: Sending the OTP
 const sendOtpSchema = Joi.object({
-  username: Joi.string().alphanum().min(3).max(30).required(),
+  username: Joi.string().pattern(/^[a-zA-Z0-9_]{3,30}$/).required().messages({
+    "string.pattern.base": "Username must be 3-30 characters and can only contain letters, numbers, and underscores"
+  }),
   email: Joi.string().email().required(),
 });
 
@@ -14,7 +16,9 @@ const sendOtpSchema = Joi.object({
 // Update verifyRegistrationSchema inside src/utils/validation.js
 
 const verifyRegistrationSchema = Joi.object({
-  username: Joi.string().alphanum().min(3).max(30).required(),
+  username: Joi.string().pattern(/^[a-zA-Z0-9_]{3,30}$/).required().messages({
+    "string.pattern.base": "Username must be 3-30 characters and can only contain letters, numbers, and underscores"
+  }),
   email: Joi.string().email().required(),
   // NEW: Stronger password rules
   password: Joi.string()

@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "./auth-provider"
 import { PostCard } from "./post-card"
-import { Loader2 } from "lucide-react" 
+import { Loader2, Users, Sparkles } from "lucide-react"
 import { API_URL } from "@/lib/config"
 
 interface FeedProps {
@@ -13,75 +13,101 @@ interface FeedProps {
 export function Feed({ onUserClick }: FeedProps) {
   const { token, user } = useAuth()
 
-  const {
-    data: feedData,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: feedData, isLoading, error } = useQuery({
     queryKey: ["feed", user?.id],
     queryFn: async () => {
-      const response = await fetch(`${API_URL}/api/posts/feed`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      if (!response.ok) throw new Error("Failed to fetch feed")
-      return response.json()
+      const res = await fetch(`${API_URL}/api/posts/feed`, { headers: { Authorization: `Bearer ${token}` } })
+      if (!res.ok) throw new Error("Failed to fetch feed")
+      return res.json()
     },
     enabled: !!token && !!user,
   })
 
   const posts = feedData?.posts || []
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+  if (isLoading) return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 mb-5">
+        <div className="h-4 w-4 rounded shimmer" />
+        <div className="h-4 w-20 rounded-lg shimmer" />
       </div>
-    )
-  }
+      {[1, 2, 3].map(i => (
+        <div key={i} className="bg-card border border-border/60 rounded-2xl p-4 space-y-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full shimmer" />
+            <div className="space-y-1.5">
+              <div className="h-3 w-24 rounded shimmer" />
+              <div className="h-3 w-16 rounded shimmer" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="h-3 w-full rounded shimmer" />
+            <div className="h-3 w-3/4 rounded shimmer" />
+          </div>
+          <div className="h-44 w-full rounded-xl shimmer" />
+        </div>
+      ))}
+    </div>
+  )
 
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">Failed to load feed</p>
-      </div>
-    )
-  }
+  if (error) return (
+    <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+      <p className="text-muted-foreground text-sm">Failed to load feed. Try refreshing.</p>
+    </div>
+  )
 
-  if (!posts || posts.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No posts yet. Start following people!</p>
+  if (!posts || posts.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+      <div className="w-16 h-16 rounded-2xl bg-secondary border border-border flex items-center justify-center">
+        <Users className="w-8 h-8 text-muted-foreground/40" />
       </div>
-    )
-  }
+      <div className="space-y-1">
+        <h3 className="font-semibold text-sm">Your feed is empty</h3>
+        <p className="text-xs text-muted-foreground max-w-xs">Follow people or explore to see posts here.</p>
+      </div>
+    </div>
+  )
+
+  const followedPosts = posts.filter((p: any) => !p.is_suggested)
+  const suggestedPosts = posts.filter((p: any) => p.is_suggested)
 
   return (
-    <div className="space-y-0 pb-20">
-      {posts.map((post: any) => (
+    <div className="pb-20">
+      {followedPosts.length > 0 && (
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <Users className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Following</span>
+        </div>
+      )}
+
+      {followedPosts.map((post: any) => (
         <PostCard
-          key={post.id}
-          id={post.id}
-          content={post.content}
-          media_url={post.media_url}
+          key={post.id} id={post.id} content={post.content} media_url={post.media_url}
           onUserClick={onUserClick}
-          user={{
-            username: post.username,
-            full_name: post.full_name,
-            id: post.user_id,
-            profile_pic_url: post.avatar_url || post.profile_pic_url,
-          }}
-          createdAt={post.created_at}
-          likeCount={post.like_count || 0}
-          commentCount={post.comment_count || 0}
-          hasLiked={post.has_liked}
-          commentsEnabled={post.comments_enabled}
-          
-          // --- NEW: Pass the suggestion flag to the card ---
-          isSuggested={post.is_suggested} 
+          user={{ username: post.username, full_name: post.full_name, id: post.user_id, profile_pic_url: post.profile_pic_url }}
+          createdAt={post.created_at} likeCount={post.like_count || 0} commentCount={post.comment_count || 0}
+          hasLiked={post.has_liked} commentsEnabled={post.comments_enabled} isSuggested={false}
         />
       ))}
+
+      {suggestedPosts.length > 0 && (
+        <>
+          <div className="flex items-center gap-2 my-5 px-1">
+            <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Suggested</span>
+            <div className="flex-1 h-px bg-border/60" />
+          </div>
+          {suggestedPosts.map((post: any) => (
+            <PostCard
+              key={post.id} id={post.id} content={post.content} media_url={post.media_url}
+              onUserClick={onUserClick}
+              user={{ username: post.username, full_name: post.full_name, id: post.user_id, profile_pic_url: post.profile_pic_url }}
+              createdAt={post.created_at} likeCount={post.like_count || 0} commentCount={post.comment_count || 0}
+              hasLiked={post.has_liked} commentsEnabled={post.comments_enabled} isSuggested={true}
+            />
+          ))}
+        </>
+      )}
     </div>
   )
 }

@@ -2,263 +2,245 @@
 
 import type React from "react"
 import { useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { useAuth } from "./auth-provider"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AlertCircle, Loader2, Check } from "lucide-react" 
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle, Loader2, Check, Eye, EyeOff, Bird } from "lucide-react"
 import { API_URL } from "@/lib/config"
 
 export function AuthFlow() {
-  const [activeTab, setActiveTab] = useState("login")
-  
-  // NEW: View state ("login" vs "forgot")
-  const [view, setView] = useState<"login" | "forgot">("login")
-  
+  const searchParams = useSearchParams()
+  const initialTab = searchParams.get("tab") === "register" ? "register" : "login"
+  const [activeTab, setActiveTab] = useState<"login" | "register">(initialTab)
+  const [view, setView] = useState<"main" | "forgot">("main")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
-  // Login form
   const [loginUsername, setLoginUsername] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
-
-  // Register form
   const [email, setEmail] = useState("")
   const [username, setUsername] = useState("")
   const [step, setStep] = useState(1)
   const [otp, setOtp] = useState("")
   const [password, setPassword] = useState("")
   const [fullName, setFullName] = useState("")
-
-  // Forgot Password form
   const [resetEmail, setResetEmail] = useState("")
   const [resetOtp, setResetOtp] = useState("")
   const [newPass, setNewPass] = useState("")
-  const [resetStep, setResetStep] = useState(1) // 1=Email, 2=OTP+Pass
+  const [resetStep, setResetStep] = useState(1)
 
   const { login, sendOtp, register } = useAuth()
 
-  // --- HANDLERS ---
-
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setIsLoading(true)
-    try {
-      await login(loginUsername, loginPassword)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed")
-    } finally {
-      setIsLoading(false)
-    }
+    e.preventDefault(); setError(null); setIsLoading(true)
+    try { await login(loginUsername, loginPassword) }
+    catch (err) { setError(err instanceof Error ? err.message : "Login failed") }
+    finally { setIsLoading(false) }
   }
 
   const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setIsLoading(true)
-    try {
-      await sendOtp(email, username)
-      setStep(2)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send OTP")
-    } finally {
-      setIsLoading(false)
-    }
+    e.preventDefault(); setError(null); setIsLoading(true)
+    try { await sendOtp(email, username); setStep(2) }
+    catch (err) { setError(err instanceof Error ? err.message : "Failed to send OTP") }
+    finally { setIsLoading(false) }
   }
 
   const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setIsLoading(true)
-    try {
-      await register(email, username, password, fullName, otp)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed")
-    } finally {
-      setIsLoading(false)
-    }
+    e.preventDefault(); setError(null); setIsLoading(true)
+    try { await register(email, username, password, fullName, otp) }
+    catch (err) { setError(err instanceof Error ? err.message : "Registration failed") }
+    finally { setIsLoading(false) }
   }
 
-  // Request Password Reset OTP
   const handleForgotRequest = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
+    e.preventDefault(); setIsLoading(true); setError(null)
     try {
-        const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: resetEmail })
-        })
-        if (!res.ok) throw new Error("Failed to send OTP")
-        setResetStep(2)
-    } catch(err) { setError("User not found or error sending email") }
+      const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetEmail })
+      })
+      if (!res.ok) throw new Error("Failed")
+      setResetStep(2)
+    } catch { setError("User not found or error sending email") }
     finally { setIsLoading(false) }
   }
 
-  // Submit Password Reset
   const handleResetSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
+    e.preventDefault(); setIsLoading(true); setError(null)
     try {
-        const res = await fetch(`${API_URL}/api/auth/reset-password`, {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: resetEmail, otp: resetOtp, new_password: newPass })
-        })
-        if (!res.ok) throw new Error("Invalid OTP or expired")
-        
-        alert("Password reset successful! Please login.")
-        setView("login")
-        setResetStep(1)
-        setResetEmail("")
-        setResetOtp("")
-        setNewPass("")
-    } catch(err) { setError("Failed to reset password") }
+      const res = await fetch(`${API_URL}/api/auth/reset-password`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetEmail, otp: resetOtp, new_password: newPass })
+      })
+      if (!res.ok) throw new Error("Invalid OTP")
+      setView("main"); setResetStep(1); setResetEmail(""); setResetOtp(""); setNewPass("")
+    } catch { setError("Failed to reset password") }
     finally { setIsLoading(false) }
   }
 
-  // --- VALIDATION LOGIC ---
-  const isLengthValid = password.length >= 8;
-  const hasNumber = /\d/.test(password);
-  const isPasswordValid = isLengthValid && hasNumber;
+  const isLengthValid = password.length >= 8
+  const hasNumber = /\d/.test(password)
+  const isPasswordValid = isLengthValid && hasNumber
 
-  // --- RENDER FORGOT PASSWORD VIEW ---
-  if (view === "forgot") {
-      return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-          <Card className="w-full max-w-md shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle>Reset Password</CardTitle>
-              <CardDescription>Enter your email to receive a code.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {error && <Alert variant="destructive" className="mb-4"><AlertDescription>{error}</AlertDescription></Alert>}
-                
-                {resetStep === 1 ? (
-                    <form onSubmit={handleForgotRequest} className="space-y-4">
-                        <Input placeholder="Enter your email" value={resetEmail} onChange={e => setResetEmail(e.target.value)} disabled={isLoading} />
-                        <Button type="submit" className="w-full" disabled={isLoading}>
-                            {isLoading ? <Loader2 className="animate-spin" /> : "Send OTP"}
-                        </Button>
-                        <Button type="button" variant="ghost" className="w-full" onClick={() => setView("login")} disabled={isLoading}>Back to Login</Button>
-                    </form>
-                ) : (
-                    <form onSubmit={handleResetSubmit} className="space-y-4">
-                        <Input placeholder="Enter OTP" value={resetOtp} onChange={e => setResetOtp(e.target.value)} disabled={isLoading} />
-                        <Input type="password" placeholder="New Password" value={newPass} onChange={e => setNewPass(e.target.value)} disabled={isLoading} />
-                        <Button type="submit" className="w-full" disabled={isLoading}>
-                            {isLoading ? <Loader2 className="animate-spin" /> : "Reset Password"}
-                        </Button>
-                        <Button type="button" variant="ghost" className="w-full" onClick={() => setResetStep(1)} disabled={isLoading}>Change Email</Button>
-                    </form>
-                )}
-            </CardContent>
-          </Card>
-        </div>
-      )
-  }
+  const inputCls = "h-11 rounded-xl border-border/70 bg-secondary text-foreground placeholder:text-muted-foreground/50 focus:border-foreground/30 focus:ring-0 text-sm transition-colors"
+  const primaryBtn = "w-full h-11 rounded-xl bg-foreground text-background font-semibold text-sm transition-all hover:opacity-85 active:scale-[0.98] disabled:opacity-40 flex items-center justify-center gap-2"
+  const ghostBtn = "w-full h-10 text-sm text-muted-foreground hover:text-foreground transition-colors"
 
-  // --- RENDER LOGIN/REGISTER VIEW ---
+  const Logo = () => (
+    <div className="flex flex-col items-center gap-3 mb-8">
+      <div className="w-12 h-12 rounded-2xl bg-foreground flex items-center justify-center">
+        <Bird className="w-6 h-6 text-background" />
+      </div>
+      <div className="text-center">
+        <h1 className="text-xl font-bold tracking-tight">SocialNest</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          {view === "forgot" ? "Reset your password" : activeTab === "login" ? "Sign in to your account" : "Create your account"}
+        </p>
+      </div>
+    </div>
+  )
+
+  const ErrorBanner = () => error ? (
+    <div className="flex items-start gap-2 p-3 bg-destructive/8 border border-destructive/20 rounded-xl text-sm text-destructive mb-4">
+      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+      <span>{error}</span>
+    </div>
+  ) : null
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">Social Media</CardTitle>
-          <CardDescription>Share your moments</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      {/* Subtle background pattern */}
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-secondary via-background to-background pointer-events-none" />
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
-            </TabsList>
+      <div className="relative w-full max-w-[380px]">
+        <div className="auth-card bg-card rounded-2xl p-8 border border-border">
+          <Logo />
 
-            {/* LOGIN TAB */}
-            <TabsContent value="login" className="space-y-4 mt-4">
-              <form onSubmit={handleLogin} className="space-y-3">
-                <Input
-                  placeholder="Username"
-                  value={loginUsername}
-                  onChange={(e) => setLoginUsername(e.target.value)}
-                  disabled={isLoading}
-                />
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  disabled={isLoading}
-                />
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Logging in...
-                    </>
-                  ) : (
-                    "Login"
-                  )}
-                </Button>
-                
-                {/* Forgot Password Link */}
-                <div className="text-center mt-2">
-                    <button type="button" onClick={() => setView("forgot")} className="text-sm text-blue-600 hover:underline">
-                        Forgot Password?
-                    </button>
-                </div>
-              </form>
-            </TabsContent>
-
-            {/* REGISTER TAB */}
-            <TabsContent value="register" className="space-y-4 mt-4">
-              {step === 1 ? (
-                <form onSubmit={handleSendOtp} className="space-y-3">
-                  <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
-                  <Input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending OTP...</> : "Send OTP"}
-                  </Button>
+          {/* Forgot password view */}
+          {view === "forgot" && (
+            <>
+              <ErrorBanner />
+              {resetStep === 1 ? (
+                <form onSubmit={handleForgotRequest} className="space-y-3">
+                  <Input className={inputCls} placeholder="Your email address" value={resetEmail} onChange={e => setResetEmail(e.target.value)} disabled={isLoading} />
+                  <button type="submit" disabled={isLoading} className={primaryBtn}>
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Send Reset Code"}
+                  </button>
+                  <button type="button" onClick={() => { setView("main"); setError(null) }} className={ghostBtn}>← Back to sign in</button>
                 </form>
               ) : (
-                <form onSubmit={handleRegister} className="space-y-3">
-                  <Input placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} disabled={isLoading} />
-                  <Input placeholder="OTP" value={otp} onChange={(e) => setOtp(e.target.value)} disabled={isLoading} />
-                  
-                  <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
-                  
-                  {/* Password Requirements Checklist */}
-                  <div className="text-xs space-y-1 mt-2 p-2 bg-secondary/30 rounded-md">
-                    <p className="font-medium text-muted-foreground mb-1">Password must have:</p>
-                    <div className={`flex items-center gap-2 ${isLengthValid ? "text-green-600" : "text-muted-foreground"}`}>
-                        {isLengthValid ? <Check className="w-3 h-3" /> : <div className="w-3 h-3 border border-current rounded-full" />}
-                        <span>At least 8 characters</span>
-                    </div>
-                    <div className={`flex items-center gap-2 ${hasNumber ? "text-green-600" : "text-muted-foreground"}`}>
-                        {hasNumber ? <Check className="w-3 h-3" /> : <div className="w-3 h-3 border border-current rounded-full" />}
-                        <span>At least one number</span>
-                    </div>
-                  </div>
-
-                  <Button type="submit" className="w-full" disabled={isLoading || !isPasswordValid}>
-                    {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Registering...</> : "Register"}
-                  </Button>
-                  <Button type="button" variant="outline" className="w-full bg-transparent" onClick={() => setStep(1)} disabled={isLoading}>Back</Button>
+                <form onSubmit={handleResetSubmit} className="space-y-3">
+                  <Input className={inputCls} placeholder="6-digit code" value={resetOtp} onChange={e => setResetOtp(e.target.value)} disabled={isLoading} maxLength={6} />
+                  <Input type="password" className={inputCls} placeholder="New password" value={newPass} onChange={e => setNewPass(e.target.value)} disabled={isLoading} />
+                  <button type="submit" disabled={isLoading} className={primaryBtn}>
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Reset Password"}
+                  </button>
                 </form>
               )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+            </>
+          )}
+
+          {/* Main auth view */}
+          {view === "main" && (
+            <>
+              {/* Tabs */}
+              <div className="flex bg-secondary rounded-xl p-1 mb-6">
+                {(["login", "register"] as const).map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => { setActiveTab(tab); setError(null); setStep(1) }}
+                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      activeTab === tab
+                        ? "bg-card text-foreground shadow-sm border border-border/50"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {tab === "login" ? "Sign In" : "Register"}
+                  </button>
+                ))}
+              </div>
+
+              <ErrorBanner />
+
+              {/* LOGIN */}
+              {activeTab === "login" && (
+                <form onSubmit={handleLogin} className="space-y-3">
+                  <Input className={inputCls} placeholder="Username" value={loginUsername} onChange={e => setLoginUsername(e.target.value)} disabled={isLoading} />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      className={`${inputCls} pr-10`}
+                      placeholder="Password"
+                      value={loginPassword}
+                      onChange={e => setLoginPassword(e.target.value)}
+                      disabled={isLoading}
+                    />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <button type="submit" disabled={isLoading} className={primaryBtn}>
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign In"}
+                  </button>
+                  <div className="text-center">
+                    <button type="button" onClick={() => { setView("forgot"); setError(null) }}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
+                      Forgot password?
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* REGISTER */}
+              {activeTab === "register" && (
+                <>
+                  {step === 1 ? (
+                    <form onSubmit={handleSendOtp} className="space-y-3">
+                      <Input type="email" className={inputCls} placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
+                      <Input className={inputCls} placeholder="Choose a username" value={username} onChange={e => setUsername(e.target.value)} disabled={isLoading} />
+                      <button type="submit" disabled={isLoading} className={primaryBtn}>
+                        {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending code...</> : "Continue"}
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleRegister} className="space-y-3">
+                      <div className="flex items-center gap-2 p-3 bg-secondary rounded-xl text-xs text-muted-foreground">
+                        <Check className="w-3.5 h-3.5 text-foreground flex-shrink-0" />
+                        Code sent to <span className="font-medium text-foreground">{email}</span>
+                      </div>
+                      <Input className={inputCls} placeholder="Full Name" value={fullName} onChange={e => setFullName(e.target.value)} disabled={isLoading} />
+                      <Input className={inputCls} placeholder="Verification code" value={otp} onChange={e => setOtp(e.target.value)} disabled={isLoading} maxLength={6} />
+                      <Input type="password" className={inputCls} placeholder="Create password" value={password} onChange={e => setPassword(e.target.value)} disabled={isLoading} />
+                      {password.length > 0 && (
+                        <div className="space-y-1.5 pt-1">
+                          {[{ ok: isLengthValid, label: "At least 8 characters" }, { ok: hasNumber, label: "Contains a number" }].map(({ ok, label }) => (
+                            <div key={label} className={`flex items-center gap-2 text-xs ${ok ? "text-foreground" : "text-muted-foreground"}`}>
+                              <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${ok ? "bg-foreground border-foreground" : "border-border"}`}>
+                                {ok && <Check className="w-2 h-2 text-background" />}
+                              </div>
+                              {label}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <button type="submit" disabled={isLoading || !isPasswordValid} className={`${primaryBtn} mt-1`}>
+                        {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating account...</> : "Create Account"}
+                      </button>
+                      <button type="button" onClick={() => setStep(1)} className={ghostBtn}>← Change email</button>
+                    </form>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+
+        <p className="text-center text-xs text-muted-foreground/50 mt-5">
+          © 2026 SocialNest · All rights reserved
+        </p>
+      </div>
     </div>
   )
 }

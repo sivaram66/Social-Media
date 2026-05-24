@@ -24,7 +24,11 @@ const sendEmail = async (toEmail, subject, htmlContent) => {
     logger.verbose(`Email sent to ${toEmail}. MessageId: ${data.messageId}`);
     return true;
   } catch (error) {
-    logger.critical("Failed to send email:", error.response ? error.response.body : error.message);
+    const errMsg = error?.response?.body?.message 
+      || error?.response?.text 
+      || error?.message 
+      || JSON.stringify(error);
+    logger.critical("Failed to send email:", errMsg);
     return false;
   }
 };

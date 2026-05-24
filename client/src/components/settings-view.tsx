@@ -3,60 +3,46 @@
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "./auth-provider"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Check, AlertCircle, Bell } from "lucide-react"
+import { Loader2, Check, AlertCircle, Bell, Lock, User } from "lucide-react"
 import { API_URL } from "@/lib/config"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function SettingsView() {
   const { user, token } = useAuth()
   const queryClient = useQueryClient()
-  
-  // --- STATE: EDIT PROFILE ---
+
   const [fullName, setFullName] = useState(user?.full_name || "")
   const [username, setUsername] = useState(user?.username || "")
   const [email, setEmail] = useState(user?.email || "")
-  // Default to true if undefined, otherwise use user's preference
-  const [notificationsEnabled, setNotificationsEnabled] = useState(user?.notifications_enabled ?? true)
+  const [notificationsEnabled, setNotificationsEnabled] = useState((user as any)?.notifications_enabled ?? true)
   const [profileSuccess, setProfileSuccess] = useState(false)
 
-  // --- STATE: CHANGE PASSWORD ---
   const [oldPassword, setOldPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [passwordError, setPasswordError] = useState("")
   const [passwordSuccess, setPasswordSuccess] = useState(false)
 
-  // 1. MUTATION: Update Profile
+  const [activeTab, setActiveTab] = useState<"profile" | "security">("profile")
+
   const updateProfileMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(`${API_URL}/api/users/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ 
-            full_name: fullName, 
-            username, 
-            email, 
-            notifications_enabled: notificationsEnabled 
-        }),
+        body: JSON.stringify({ full_name: fullName, username, email, notifications_enabled: notificationsEnabled }),
       })
       if (!res.ok) throw new Error("Failed to update profile")
       return res.json()
     },
     onSuccess: (data) => {
-      // Update local storage user data
       localStorage.setItem("auth_user", JSON.stringify(data.user))
-      // Force refresh data
       queryClient.invalidateQueries({ queryKey: ["profile", "me"] })
       setProfileSuccess(true)
       setTimeout(() => setProfileSuccess(false), 3000)
     }
   })
 
-  // 2. MUTATION: Change Password
   const changePasswordMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(`${API_URL}/api/users/password`, {
@@ -64,133 +50,145 @@ export function SettingsView() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
       })
-      
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to update password")
       return data
     },
     onSuccess: () => {
-      setPasswordSuccess(true)
-      setPasswordError("")
-      setOldPassword("")
-      setNewPassword("")
+      setPasswordSuccess(true); setPasswordError("")
+      setOldPassword(""); setNewPassword("")
       setTimeout(() => setPasswordSuccess(false), 3000)
     },
-    onError: (err) => {
-      setPasswordError(err.message)
-      setPasswordSuccess(false)
-    }
+    onError: (err) => { setPasswordError(err.message); setPasswordSuccess(false) }
   })
 
   if (!user) return null
 
+  const inputCls = "h-10 rounded-xl border-border/60 bg-secondary text-sm focus:border-foreground/20 focus:ring-0 transition-colors"
+  const tabs = [
+    { id: "profile" as const, icon: User, label: "Profile" },
+    { id: "security" as const, icon: Lock, label: "Security" },
+  ]
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
+    <div className="max-w-lg space-y-6 pb-20">
+      <div>
+        <h2 className="text-lg font-bold tracking-tight">Settings</h2>
+        <p className="text-sm text-muted-foreground mt-0.5">Manage your account</p>
+      </div>
 
-      <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="profile">Edit Profile</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-        </TabsList>
+      {/* Tabs */}
+      <div className="flex bg-secondary rounded-xl p-1">
+        {tabs.map(({ id, icon: Icon, label }) => (
+          <button
+            key={id}
+            onClick={() => setActiveTab(id)}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all ${
+              activeTab === id
+                ? "bg-card text-foreground shadow-sm border border-border/50"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Icon className="w-3.5 h-3.5" />
+            {label}
+          </button>
+        ))}
+      </div>
 
-        {/* --- TAB 1: PROFILE --- */}
-        <TabsContent value="profile">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Update your public profile details.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Full Name</Label>
-                <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+      {/* Profile Tab */}
+      {activeTab === "profile" && (
+        <div className="bg-card border border-border/60 rounded-2xl p-5 space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Full Name</Label>
+            <Input className={inputCls} value={fullName} onChange={e => setFullName(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Username</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
+              <Input className={`${inputCls} pl-7`} value={username} onChange={e => setUsername(e.target.value)} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</Label>
+            <Input type="email" className={inputCls} value={email} onChange={e => setEmail(e.target.value)} />
+          </div>
+
+          {/* Notifications toggle */}
+          <div className="flex items-center justify-between py-3 border-t border-border/40">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center">
+                <Bell className="w-3.5 h-3.5 text-muted-foreground" />
               </div>
-              <div className="space-y-2">
-                <Label>Username</Label>
-                <Input value={username} onChange={(e) => setUsername(e.target.value)} />
+              <div>
+                <p className="text-sm font-medium">Email notifications</p>
+                <p className="text-xs text-muted-foreground">Get notified about likes and follows</p>
               </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
+            </div>
+            <button
+              onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+              className={`relative w-10 h-5.5 rounded-full transition-colors ${notificationsEnabled ? "bg-foreground" : "bg-secondary border border-border"}`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-4.5 h-4.5 rounded-full bg-background transition-all ${notificationsEnabled ? "translate-x-4.5" : "translate-x-0"}`} />
+            </button>
+          </div>
 
-              {/* Notification Toggle */}
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-secondary/20 mt-4">
-                <div className="flex items-center gap-2">
-                    <Bell className="w-5 h-5 text-muted-foreground" />
-                    <div>
-                        <p className="font-medium text-sm">Notifications</p>
-                        <p className="text-xs text-muted-foreground">Receive updates when people like or follow you.</p>
-                    </div>
-                </div>
-                <input 
-                    type="checkbox" 
-                    className="w-5 h-5 accent-primary"
-                    checked={notificationsEnabled}
-                    onChange={(e) => setNotificationsEnabled(e.target.checked)}
-                />
-              </div>
+          {profileSuccess && (
+            <div className="flex items-center gap-2 p-3 bg-secondary border border-border/60 rounded-xl text-sm text-foreground">
+              <Check className="w-4 h-4 flex-shrink-0" />
+              Profile updated successfully
+            </div>
+          )}
 
-              {profileSuccess && (
-                <Alert className="bg-green-50 text-green-600 border-green-200">
-                  <Check className="h-4 w-4" />
-                  <AlertDescription>Profile updated successfully!</AlertDescription>
-                </Alert>
-              )}
+          <button
+            onClick={() => updateProfileMutation.mutate()}
+            disabled={updateProfileMutation.isPending}
+            className="w-full h-10 rounded-xl bg-foreground text-background text-sm font-semibold transition-all hover:opacity-85 disabled:opacity-40 flex items-center justify-center gap-2"
+          >
+            {updateProfileMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
+          </button>
+        </div>
+      )}
 
-              <Button 
-                onClick={() => updateProfileMutation.mutate()} 
-                disabled={updateProfileMutation.isPending}
-                className="w-full"
-              >
-                {updateProfileMutation.isPending ? <Loader2 className="animate-spin w-4 h-4" /> : "Save Changes"}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
+      {/* Security Tab */}
+      {activeTab === "security" && (
+        <div className="bg-card border border-border/60 rounded-2xl p-5 space-y-4">
+          <div>
+            <p className="text-sm font-semibold">Change Password</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Ensure your account stays secure</p>
+          </div>
 
-        {/* --- TAB 2: SECURITY --- */}
-        <TabsContent value="security">
-          <Card>
-            <CardHeader>
-              <CardTitle>Change Password</CardTitle>
-              <CardDescription>Ensure your account is secure with a strong password.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {passwordError && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{passwordError}</AlertDescription>
-                </Alert>
-              )}
-              {passwordSuccess && (
-                <Alert className="bg-green-50 text-green-600 border-green-200">
-                  <Check className="h-4 w-4" />
-                  <AlertDescription>Password updated successfully!</AlertDescription>
-                </Alert>
-              )}
+          {passwordError && (
+            <div className="flex items-center gap-2 p-3 bg-destructive/8 border border-destructive/20 rounded-xl text-sm text-destructive">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              {passwordError}
+            </div>
+          )}
+          {passwordSuccess && (
+            <div className="flex items-center gap-2 p-3 bg-secondary border border-border/60 rounded-xl text-sm text-foreground">
+              <Check className="w-4 h-4 flex-shrink-0" />
+              Password updated successfully
+            </div>
+          )}
 
-              <div className="space-y-2">
-                <Label>Current Password</Label>
-                <Input type="password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>New Password</Label>
-                <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-              </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Current Password</Label>
+            <Input type="password" className={inputCls} value={oldPassword} onChange={e => setOldPassword(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">New Password</Label>
+            <Input type="password" className={inputCls} value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+          </div>
 
-              <Button 
-                onClick={() => changePasswordMutation.mutate()} 
-                disabled={changePasswordMutation.isPending || !oldPassword || !newPassword}
-                className="w-full"
-              >
-                {changePasswordMutation.isPending ? <Loader2 className="animate-spin w-4 h-4" /> : "Update Password"}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          <button
+            onClick={() => changePasswordMutation.mutate()}
+            disabled={changePasswordMutation.isPending || !oldPassword || !newPassword}
+            className="w-full h-10 rounded-xl bg-foreground text-background text-sm font-semibold transition-all hover:opacity-85 disabled:opacity-40 flex items-center justify-center gap-2"
+          >
+            {changePasswordMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Update Password"}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

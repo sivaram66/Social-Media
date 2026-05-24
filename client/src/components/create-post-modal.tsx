@@ -4,12 +4,9 @@ import type React from "react"
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "./auth-provider"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
-import { AlertCircle, ImageIcon, Loader2, X, MessageSquare } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Checkbox } from "@/components/ui/checkbox" 
+import { AlertCircle, ImageIcon, Loader2, X, Send, MessageSquare } from "lucide-react"
 import { API_URL } from "@/lib/config"
 
 interface CreatePostModalProps {
@@ -18,132 +15,148 @@ interface CreatePostModalProps {
 }
 
 export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const queryClient = useQueryClient()
   const [content, setContent] = useState("")
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  
-  // NEW: State for comments toggle
   const [commentsEnabled, setCommentsEnabled] = useState(true)
 
   const mutation = useMutation({
     mutationFn: async () => {
       const formData = new FormData()
       formData.append("content", content)
-      // NEW: Send the boolean setting
       formData.append("comments_enabled", String(commentsEnabled))
-      
-      if (file) {
-        formData.append("media", file)
-      }
-
-      const response = await fetch(`${API_URL}/api/posts`, {
+      if (file) formData.append("media", file)
+      const res = await fetch(`${API_URL}/api/posts`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       })
-
-      if (!response.ok) {
-         const data = await response.json().catch(() => ({}));
-         throw new Error(data.error || "Failed to create post");
-      }
-      return response.json()
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || "Failed") }
+      return res.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] })
       queryClient.invalidateQueries({ queryKey: ["my-posts"] })
-      setContent("")
-      setFile(null)
-      setPreview(null)
-      setError(null)
-      setCommentsEnabled(true) 
+      setContent(""); setFile(null); setPreview(null); setError(null); setCommentsEnabled(true)
       onClose()
     },
-    onError: (err) => {
-      setError(err instanceof Error ? err.message : "Failed to create post")
-    },
+    onError: (err) => setError(err instanceof Error ? err.message : "Failed to create post"),
   })
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0]
-    if (selectedFile) {
-      setFile(selectedFile)
+    const f = e.target.files?.[0]
+    if (f) {
+      setFile(f)
       const reader = new FileReader()
       reader.onloadend = () => setPreview(reader.result as string)
-      reader.readAsDataURL(selectedFile)
+      reader.readAsDataURL(f)
     }
   }
 
   const handleSubmit = () => {
-    if (!content.trim() && !file) {
-      setError("Please add text or an image")
-      return
-    }
+    if (!content.trim() && !file) { setError("Add some text or an image"); return }
     mutation.mutate()
   }
 
+  const maxChars = 500
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create a Post</DialogTitle>
-          <DialogDescription>Share your thoughts with the community</DialogDescription>
+      <DialogContent className="max-w-lg bg-card border-border/60 rounded-2xl shadow-2xl p-0 overflow-hidden">
+
+        {/* Header */}
+        <DialogHeader className="px-5 pt-5 pb-4 border-b border-border/60">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center text-sm font-semibold overflow-hidden flex-shrink-0">
+              {user?.profile_pic_url
+                ? <img src={user.profile_pic_url} alt="" className="w-full h-full object-cover" />
+                : user?.full_name?.charAt(0).toUpperCase()
+              }
+            </div>
+            <div>
+              <DialogTitle className="text-sm font-semibold leading-none">{user?.full_name}</DialogTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">@{user?.username}</p>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="p-5 space-y-4">
           {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <div className="flex items-center gap-2 p-3 bg-destructive/8 border border-destructive/20 rounded-xl text-sm text-destructive">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              {error}
+            </div>
           )}
 
           <Textarea
             placeholder="What's on your mind?"
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="min-h-24 resize-none"
+            onChange={e => setContent(e.target.value.slice(0, maxChars))}
+            className="min-h-[100px] resize-none bg-secondary/50 border-border/50 focus:border-foreground/20 focus:ring-0 rounded-xl text-sm placeholder:text-muted-foreground/50"
             disabled={mutation.isPending}
           />
 
+          <div className="flex justify-end">
+            <span className={`text-xs tabular-nums ${content.length > maxChars * 0.9 ? "text-destructive" : "text-muted-foreground/40"}`}>
+              {content.length}/{maxChars}
+            </span>
+          </div>
+
           {preview && (
-            <div className="relative rounded-lg overflow-hidden border border-border bg-black/5 flex justify-center">
-              <img src={preview} alt="Preview" className="w-full max-h-[400px] object-contain" />
+            <div className="relative rounded-xl overflow-hidden border border-border/60 bg-secondary/30">
+              <img src={preview} alt="Preview" className="w-full max-h-[280px] object-contain" />
               <button
-                onClick={() => { setFile(null); setPreview(null); }}
-                className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5"
+                onClick={() => { setFile(null); setPreview(null) }}
+                className="absolute top-2 right-2 bg-background/80 hover:bg-background text-foreground rounded-full p-1.5 border border-border transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           )}
 
-          <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg hover:bg-secondary/50 cursor-pointer transition-colors">
-              <ImageIcon className="w-4 h-4" />
-              <span className="text-sm">Add image</span>
-              <input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" disabled={mutation.isPending} />
-            </label>
+          {/* Controls */}
+          <div className="flex items-center justify-between pt-1 border-t border-border/40">
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 hover:bg-secondary cursor-pointer transition-colors text-xs text-muted-foreground hover:text-foreground">
+                <ImageIcon className="w-3.5 h-3.5" />
+                {file ? "Change" : "Image"}
+                <input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" disabled={mutation.isPending} />
+              </label>
 
-            {/* NEW: Comments Toggle */}
-            <label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground select-none">
-              <input 
-                type="checkbox" 
-                checked={commentsEnabled} 
-                onChange={(e) => setCommentsEnabled(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              Allow Comments
-            </label>
-          </div>
+              <button
+                type="button"
+                onClick={() => setCommentsEnabled(!commentsEnabled)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-colors ${
+                  commentsEnabled
+                    ? "border-foreground/20 bg-foreground text-background"
+                    : "border-border/60 text-muted-foreground hover:bg-secondary"
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                Comments
+              </button>
+            </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose} disabled={mutation.isPending} className="flex-1 bg-transparent">Cancel</Button>
-            <Button onClick={handleSubmit} disabled={mutation.isPending || (!content.trim() && !file)} className="flex-1">
-              {mutation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Posting...</> : "Post"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onClose}
+                disabled={mutation.isPending}
+                className="px-4 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={mutation.isPending || (!content.trim() && !file)}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-foreground text-background text-sm font-semibold transition-all hover:opacity-85 disabled:opacity-40 active:scale-95"
+              >
+                {mutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                {mutation.isPending ? "Posting..." : "Post"}
+              </button>
+            </div>
           </div>
         </div>
       </DialogContent>
