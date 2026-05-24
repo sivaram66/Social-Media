@@ -20,9 +20,9 @@ const create = async (req, res) => {
     const { content, comments_enabled } = req.validatedData;
     
     // 2. Determine media_url
-    // If a file was uploaded, req.file.location is the S3 URL
+    // If a file was uploaded, req.file.path is the Cloudinary secure URL
     // If no file, check if a URL string was passed in the body
-    let media_url = req.file ? req.file.location : req.validatedData.media_url;
+    let media_url = req.file ? req.file.path : req.validatedData.media_url;
 
     const userId = req.user.id;
 

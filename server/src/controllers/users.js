@@ -183,7 +183,7 @@ async function getUserById(req, res) {
 async function uploadProfilePic(req, res) {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-    const url = req.file.location;
+    const url = req.file.path; // Cloudinary secure URL
     const user = await updateProfilePicModel(req.user.id, url);
     res.json({ message: "Profile picture updated", user });
   } catch (error) {
